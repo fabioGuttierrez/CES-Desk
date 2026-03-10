@@ -42,7 +42,9 @@
               {{ u.get_role_display }}
             </span>
           </td>
-          <td style="padding:12px 20px; font-size:12px; color:var(--cs-gray);">{{ u.company.trade_name|default:u.company.name|default:"—" }}</td>
+          <td style="padding:12px 20px; font-size:12px; color:var(--cs-gray);">
+            {% if u.company %}{{ u.company.trade_name|default:u.company.name }}{% else %}—{% endif %}
+          </td>
           <td style="padding:12px 20px;">
             {% if u.is_active %}
             <span class="cs-badge b-green" style="font-size:10px;">Ativo</span>
