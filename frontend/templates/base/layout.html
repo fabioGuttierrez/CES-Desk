@@ -74,6 +74,10 @@
 
         {% if user.role == 'admin' %}
         <span class="sidebar-section-label">Sistema</span>
+        <a href="{% url 'user_list' %}"
+           class="cs-nav-link {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
+          <i class="fas fa-users"></i> Usuários
+        </a>
         <a href="{% url 'holiday_list' %}"
            class="cs-nav-link {% if request.resolver_match.url_name == 'holiday_list' %}active{% endif %}">
           <i class="fas fa-calendar-days"></i> Feriados / SLA

@@ -1,0 +1,103 @@
+{% extends "base/layout.html" %}
+{% block title %}{% if edit_user %}Editar Usuário{% else %}Novo Usuário{% endif %}{% endblock %}
+{% block page_title %}{% if edit_user %}EDITAR USUÁRIO{% else %}NOVO USUÁRIO{% endif %}{% endblock %}
+
+{% block content %}
+<div style="max-width:560px; margin:0 auto;">
+  <div class="cs-card">
+    <div class="cs-card-header">
+      <span><i class="fas fa-user{% if edit_user %}-edit{% else %}-plus{% endif %}" style="margin-right:8px;"></i>
+        {% if edit_user %}Editar {{ edit_user.get_full_name|default:edit_user.username }}{% else %}Criar Usuário{% endif %}
+      </span>
+    </div>
+    <div class="cs-card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+          <div>
+            <label style="font-size:11px; color:var(--cs-gray); display:block; margin-bottom:4px;">Nome</label>
+            <input type="text" name="first_name" value="{{ edit_user.first_name|default:'' }}"
+                   style="width:100%; background:var(--cs-surface); border:1px solid rgba(255,255,255,.1);
+                          color:#fff; border-radius:8px; padding:8px 12px; font-size:13px; box-sizing:border-box;">
+          </div>
+          <div>
+            <label style="font-size:11px; color:var(--cs-gray); display:block; margin-bottom:4px;">Sobrenome</label>
+            <input type="text" name="last_name" value="{{ edit_user.last_name|default:'' }}"
+                   style="width:100%; background:var(--cs-surface); border:1px solid rgba(255,255,255,.1);
+                          color:#fff; border-radius:8px; padding:8px 12px; font-size:13px; box-sizing:border-box;">
+          </div>
+        </div>
+
+        {% if not edit_user %}
+        <div style="margin-bottom:14px;">
+          <label style="font-size:11px; color:var(--cs-gray); display:block; margin-bottom:4px;">Login (usuário) <span style="color:#f87171;">*</span></label>
+          <input type="text" name="username" required
+                 style="width:100%; background:var(--cs-surface); border:1px solid rgba(255,255,255,.1);
+                        color:#fff; border-radius:8px; padding:8px 12px; font-size:13px; box-sizing:border-box;">
+        </div>
+        {% endif %}
+
+        <div style="margin-bottom:14px;">
+          <label style="font-size:11px; color:var(--cs-gray); display:block; margin-bottom:4px;">E-mail <span style="color:#f87171;">*</span></label>
+          <input type="email" name="email" value="{{ edit_user.email|default:'' }}" required
+                 style="width:100%; background:var(--cs-surface); border:1px solid rgba(255,255,255,.1);
+                        color:#fff; border-radius:8px; padding:8px 12px; font-size:13px; box-sizing:border-box;">
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+          <div>
+            <label style="font-size:11px; color:var(--cs-gray); display:block; margin-bottom:4px;">Perfil</label>
+            <select name="role" style="width:100%; background:var(--cs-surface); border:1px solid rgba(255,255,255,.1);
+                                       color:#fff; border-radius:8px; padding:8px 12px; font-size:13px; box-sizing:border-box;">
+              <option value="client" {% if edit_user.role == 'client' or not edit_user %}selected{% endif %}>Cliente</option>
+              <option value="analyst" {% if edit_user.role == 'analyst' %}selected{% endif %}>Analista DP</option>
+              <option value="admin" {% if edit_user.role == 'admin' %}selected{% endif %}>Admin</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px; color:var(--cs-gray); display:block; margin-bottom:4px;">Telefone</label>
+            <input type="text" name="phone" value="{{ edit_user.phone|default:'' }}"
+                   style="width:100%; background:var(--cs-surface); border:1px solid rgba(255,255,255,.1);
+                          color:#fff; border-radius:8px; padding:8px 12px; font-size:13px; box-sizing:border-box;">
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <label style="font-size:11px; color:var(--cs-gray); display:block; margin-bottom:4px;">Empresa</label>
+          <select name="company" style="width:100%; background:var(--cs-surface); border:1px solid rgba(255,255,255,.1);
+                                        color:#fff; border-radius:8px; padding:8px 12px; font-size:13px; box-sizing:border-box;">
+            <option value="">— Nenhuma —</option>
+            {% for c in companies %}
+            <option value="{{ c.pk }}" {% if edit_user.company_id == c.pk %}selected{% endif %}>
+              {{ c.trade_name|default:c.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <label style="font-size:11px; color:var(--cs-gray); display:block; margin-bottom:4px;">
+            {% if edit_user %}Nova senha (deixe em branco para não alterar){% else %}Senha temporária <span style="color:#f87171;">*</span>{% endif %}
+          </label>
+          <input type="text" name="{% if edit_user %}new_password{% else %}password{% endif %}"
+                 {% if not edit_user %}required{% endif %}
+                 placeholder="O usuário será obrigado a trocar no primeiro login"
+                 style="width:100%; background:var(--cs-surface); border:1px solid rgba(255,255,255,.1);
+                        color:#fff; border-radius:8px; padding:8px 12px; font-size:13px; box-sizing:border-box;">
+          <span style="font-size:10px; color:var(--cs-gray); margin-top:4px; display:block;">
+            <i class="fas fa-circle-info"></i> Repasse essa senha ao usuário. Ele deverá trocá-la no primeiro acesso.
+          </span>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <a href="{% url 'user_list' %}" class="btn-cs-ghost btn-sm-cs">Cancelar</a>
+          <button type="submit" class="btn-cs-primary btn-sm-cs">
+            <i class="fas fa-save"></i> {% if edit_user %}Salvar{% else %}Criar Usuário{% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

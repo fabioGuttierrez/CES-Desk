@@ -20,6 +20,10 @@ class User(AbstractUser):
     phone = models.CharField(max_length=20, blank=True)
     avatar = models.URLField(blank=True)
     is_active = models.BooleanField(default=True)
+    must_change_password = models.BooleanField(
+        default=False,
+        verbose_name='Deve trocar senha no próximo login',
+    )
 
     class Meta:
         verbose_name = 'Usuário'

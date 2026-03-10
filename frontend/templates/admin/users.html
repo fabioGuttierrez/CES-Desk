@@ -1,0 +1,80 @@
+{% extends "base/layout.html" %}
+{% block title %}Usuários{% endblock %}
+{% block page_title %}USUÁRIOS{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+  <span style="font-size:13px; color:var(--cs-gray);">{{ users|length }} usuário(s) cadastrado(s)</span>
+  <a href="{% url 'user_create' %}" class="btn-cs-primary btn-sm-cs">
+    <i class="fas fa-plus"></i> Novo Usuário
+  </a>
+</div>
+
+<div class="cs-card">
+  <div class="cs-card-body" style="padding:0;">
+    <table style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="border-bottom:1px solid rgba(255,255,255,.08);">
+          <th style="padding:10px 20px; text-align:left; font-size:11px; color:var(--cs-gray); font-weight:500;">Nome</th>
+          <th style="padding:10px 20px; text-align:left; font-size:11px; color:var(--cs-gray); font-weight:500;">Login</th>
+          <th style="padding:10px 20px; text-align:left; font-size:11px; color:var(--cs-gray); font-weight:500;">E-mail</th>
+          <th style="padding:10px 20px; text-align:left; font-size:11px; color:var(--cs-gray); font-weight:500;">Perfil</th>
+          <th style="padding:10px 20px; text-align:left; font-size:11px; color:var(--cs-gray); font-weight:500;">Empresa</th>
+          <th style="padding:10px 20px; text-align:left; font-size:11px; color:var(--cs-gray); font-weight:500;">Situação</th>
+          <th style="padding:10px 20px; text-align:right; font-size:11px; color:var(--cs-gray); font-weight:500;">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr style="border-bottom:1px solid rgba(255,255,255,.04);">
+          <td style="padding:12px 20px; font-size:13px;">
+            {{ u.get_full_name|default:u.username }}
+            {% if u.must_change_password %}
+            <span class="cs-badge b-yellow" style="font-size:9px; margin-left:4px;" title="Troca de senha pendente">
+              <i class="fas fa-key"></i>
+            </span>
+            {% endif %}
+          </td>
+          <td style="padding:12px 20px; font-size:12px; color:var(--cs-gray);">{{ u.username }}</td>
+          <td style="padding:12px 20px; font-size:12px; color:var(--cs-gray);">{{ u.email|default:"—" }}</td>
+          <td style="padding:12px 20px;">
+            <span class="cs-badge {% if u.role == 'admin' %}b-red{% elif u.role == 'analyst' %}b-teal{% else %}b-blue{% endif %}" style="font-size:10px;">
+              {{ u.get_role_display }}
+            </span>
+          </td>
+          <td style="padding:12px 20px; font-size:12px; color:var(--cs-gray);">{{ u.company.trade_name|default:u.company.name|default:"—" }}</td>
+          <td style="padding:12px 20px;">
+            {% if u.is_active %}
+            <span class="cs-badge b-green" style="font-size:10px;">Ativo</span>
+            {% else %}
+            <span class="cs-badge" style="font-size:10px; background:rgba(255,255,255,.06); color:var(--cs-gray);">Inativo</span>
+            {% endif %}
+          </td>
+          <td style="padding:12px 20px; text-align:right; white-space:nowrap;">
+            <a href="{% url 'user_edit' u.pk %}" class="btn-cs-ghost btn-sm-cs" style="padding:4px 10px; font-size:11px; margin-right:4px;">
+              <i class="fas fa-edit"></i>
+            </a>
+            {% if u != request.user %}
+            <form method="post" action="{% url 'user_toggle_active' u.pk %}" style="display:inline;"
+                  onsubmit="return confirm('{% if u.is_active %}Desativar{% else %}Ativar{% endif %} {{ u.get_full_name|default:u.username }}?')">
+              {% csrf_token %}
+              <button type="submit" class="{% if u.is_active %}btn-cs-danger{% else %}btn-cs-primary{% endif %} btn-sm-cs"
+                      style="padding:4px 10px; font-size:11px;">
+                <i class="fas {% if u.is_active %}fa-ban{% else %}fa-check{% endif %}"></i>
+              </button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" style="text-align:center; padding:40px; color:var(--cs-gray); font-size:13px;">
+            Nenhum usuário cadastrado.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
