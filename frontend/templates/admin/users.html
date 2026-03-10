@@ -5,7 +5,7 @@
 {% block content %}
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
   <span style="font-size:13px; color:var(--cs-gray);">{{ users|length }} usuário(s) cadastrado(s)</span>
-  <a href="{% url 'user_create' %}" class="btn-cs-primary btn-sm-cs">
+  <a href="{% url 'user_create' %}" class="btn-cs btn-cs-teal btn-sm-cs">
     <i class="fas fa-plus"></i> Novo Usuário
   </a>
 </div>
@@ -60,7 +60,7 @@
             <form method="post" action="{% url 'user_toggle_active' u.pk %}" style="display:inline;"
                   onsubmit="return confirm('{% if u.is_active %}Desativar{% else %}Ativar{% endif %} {{ u.get_full_name|default:u.username }}?')">
               {% csrf_token %}
-              <button type="submit" class="{% if u.is_active %}btn-cs-danger{% else %}btn-cs-primary{% endif %} btn-sm-cs"
+              <button type="submit" class="{% if u.is_active %}btn-cs-danger{% else %}btn-cs btn-cs-teal{% endif %} btn-sm-cs"
                       style="padding:4px 10px; font-size:11px;">
                 <i class="fas {% if u.is_active %}fa-ban{% else %}fa-check{% endif %}"></i>
               </button>
