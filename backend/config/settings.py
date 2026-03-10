@@ -10,6 +10,10 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
 
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='https://ces.bildee.com.br,http://localhost:8000'
+).split(',')
 # Application definition
 DJANGO_APPS = [
     'django.contrib.admin',
