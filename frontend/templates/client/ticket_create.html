@@ -1,0 +1,120 @@
+{% extends "base/layout.html" %}
+{% block title %}Abrir Chamado — Campos e Souza DP{% endblock %}
+{% block page_title %}ABRIR NOVO CHAMADO{% endblock %}
+
+{% block content %}
+<div style="display:grid; grid-template-columns:1fr 320px; gap:22px; align-items:start;">
+
+  <!-- Formulário -->
+  <div class="cs-card">
+    <div class="cs-card-header">
+      <span class="cs-card-title"><i class="fas fa-plus-circle" style="color:var(--cs-orange); margin-right:8px;"></i>NOVO CHAMADO</span>
+    </div>
+    <div class="cs-card-body">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Categoria -->
+        <div style="margin-bottom:24px;">
+          <label class="cs-label">Categoria do chamado *</label>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:8px;">
+            {% for cat in categories %}
+            <div class="cat-chip">
+              <input type="radio" name="category" id="cat_{{ cat.id }}" value="{{ cat.id }}"/>
+              <label for="cat_{{ cat.id }}">
+                <i class="fas fa-folder" style="color:var(--cs-teal); font-size:12px;"></i>
+                {{ cat.name }}
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Assunto -->
+        <div style="margin-bottom:16px;">
+          <label class="cs-label">Assunto *</label>
+          <input type="text" name="subject" class="cs-input"
+                 placeholder="Descreva brevemente: ex. Cálculo rescisório João Silva" required/>
+        </div>
+
+        <!-- Descrição -->
+        <div style="margin-bottom:16px;">
+          <label class="cs-label">Descrição detalhada *</label>
+          <textarea name="description" class="cs-textarea" rows="6"
+            placeholder="Detalhe sua solicitação: nome do colaborador, período, valores, qualquer informação relevante..." required></textarea>
+        </div>
+
+        <!-- Prioridade -->
+        <div style="margin-bottom:20px;">
+          <label class="cs-label">Prioridade</label>
+          <select name="priority" class="cs-select">
+            {% for value, label in priority_choices %}
+            <option value="{{ value }}" {% if value == 'medium' %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Anexos -->
+        <div style="margin-bottom:24px;">
+          <label class="cs-label">Anexos (opcional)</label>
+          <div class="upload-zone">
+            <input type="file" name="attachments" multiple/>
+            <i class="fas fa-cloud-upload-alt" style="font-size:2rem; color:var(--cs-teal); margin-bottom:10px; display:block;"></i>
+            <div style="font-size:14px; color:rgba(255,255,255,.6); margin-bottom:4px;">Arraste ou clique para selecionar</div>
+            <div class="text-xs text-muted">PDF, DOC, XLS, imagens — máx. 10MB por arquivo</div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button type="submit" class="btn-cs btn-cs-orange" style="font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:1.5px;">
+            <i class="fas fa-paper-plane"></i> ENVIAR CHAMADO
+          </button>
+          <a href="{% url 'ticket_list' %}" class="btn-cs-ghost">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dicas laterais -->
+  <div style="display:flex; flex-direction:column; gap:16px; position:sticky; top:80px;">
+
+    <div class="cs-card" style="border-left:3px solid var(--cs-teal);">
+      <div class="cs-card-body">
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:1.5px; margin-bottom:12px; color:var(--cs-teal-light);">
+          <i class="fas fa-lightbulb" style="margin-right:6px;"></i>DICA
+        </div>
+        <p class="text-sm text-muted" style="margin:0; line-height:1.7;">
+          Antes de abrir um chamado, consulte nossa
+          <a href="{% url 'knowledge_list' %}" style="color:var(--cs-teal-light); text-decoration:none;">
+            Base de Conhecimento
+          </a>.
+          Sua dúvida pode já estar respondida!
+        </p>
+      </div>
+    </div>
+
+    <div class="cs-card" style="border-left:3px solid var(--cs-orange);">
+      <div class="cs-card-body">
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:1.5px; margin-bottom:12px; color:var(--cs-orange);">
+          <i class="fas fa-clock" style="margin-right:6px;"></i>PRAZOS SLA
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between; font-size:12.5px;">
+            <span class="text-muted">Urgente</span><span style="color:var(--cs-orange); font-weight:600;">4h</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:12.5px;">
+            <span class="text-muted">Alta</span><span style="color:#facc15; font-weight:600;">8h</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:12.5px;">
+            <span class="text-muted">Média</span><span style="color:#60a5fa; font-weight:600;">24h</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:12.5px;">
+            <span class="text-muted">Baixa</span><span style="color:#4ade80; font-weight:600;">48h</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

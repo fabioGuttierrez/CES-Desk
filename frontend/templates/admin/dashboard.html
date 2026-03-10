@@ -1,0 +1,174 @@
+{% extends "base/layout.html" %}
+{% block title %}Dashboard — Campos e Souza DP{% endblock %}
+{% block page_title %}DASHBOARD{% endblock %}
+
+{% block content %}
+
+<!-- Métricas -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:16px; margin-bottom:28px;">
+
+  <div class="metric-card t-teal">
+    <div class="metric-icon i-teal"><i class="fas fa-ticket-simple"></i></div>
+    <div>
+      <div class="metric-value">{{ total }}</div>
+      <div class="metric-label">Total</div>
+    </div>
+  </div>
+
+  <div class="metric-card t-blue">
+    <div class="metric-icon i-blue"><i class="fas fa-folder-open"></i></div>
+    <div>
+      <div class="metric-value">{{ open_count }}</div>
+      <div class="metric-label">Abertos</div>
+    </div>
+  </div>
+
+  <div class="metric-card t-teal">
+    <div class="metric-icon i-teal"><i class="fas fa-headset"></i></div>
+    <div>
+      <div class="metric-value">{{ in_progress }}</div>
+      <div class="metric-label">Em Atend.</div>
+    </div>
+  </div>
+
+  <div class="metric-card t-orange">
+    <div class="metric-icon i-orange"><i class="fas fa-fire"></i></div>
+    <div>
+      <div class="metric-value">{{ urgent }}</div>
+      <div class="metric-label">Urgentes</div>
+    </div>
+  </div>
+
+  <div class="metric-card t-red">
+    <div class="metric-icon i-red"><i class="fas fa-clock"></i></div>
+    <div>
+      <div class="metric-value">{{ sla_breached }}</div>
+      <div class="metric-label">SLA Estourado</div>
+    </div>
+  </div>
+
+  <div class="metric-card t-green">
+    <div class="metric-icon i-green"><i class="fas fa-check-circle"></i></div>
+    <div>
+      <div class="metric-value">{{ resolved_today }}</div>
+      <div class="metric-label">Resolvidos Hoje</div>
+    </div>
+  </div>
+
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 300px; gap:20px;">
+
+  <!-- Tickets recentes -->
+  <div class="cs-card">
+    <div class="cs-card-header">
+      <span class="cs-card-title">CHAMADOS RECENTES</span>
+      <a href="{% url 'ticket_list' %}" class="btn-cs-ghost btn-sm-cs">Ver todos <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="cs-table-wrap">
+      <table class="cs-table">
+        <thead>
+          <tr>
+            <th style="padding-left:22px;">#</th>
+            <th>Assunto</th>
+            <th>Empresa</th>
+            <th>Prioridade</th>
+            <th>Status</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ticket in recent_tickets %}
+          <tr onclick="location.href='{% url 'ticket_detail' ticket.pk %}'">
+            <td style="padding-left:22px;"><span class="ticket-number">{{ ticket.number }}</span></td>
+            <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ ticket.subject }}</td>
+            <td class="text-sm text-muted">{{ ticket.company.name|truncatechars:20 }}</td>
+            <td>
+              <span class="cs-badge
+                {% if ticket.priority == 'urgent' %}b-red
+                {% elif ticket.priority == 'high' %}b-orange
+                {% elif ticket.priority == 'medium' %}b-blue
+                {% else %}b-green{% endif %}">
+                {{ ticket.get_priority_display }}
+              </span>
+            </td>
+            <td>
+              <span class="cs-badge
+                {% if ticket.status == 'open' %}b-blue
+                {% elif ticket.status == 'in_progress' %}b-teal
+                {% elif ticket.status == 'waiting' %}b-yellow
+                {% elif ticket.status == 'resolved' %}b-green
+                {% else %}b-gray{% endif %}">
+                {{ ticket.get_status_display }}
+              </span>
+            </td>
+            <td class="text-sm text-muted">{{ ticket.created_at|date:"d/m H:i" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-muted" style="padding:40px; text-align:center;">Nenhum ticket ainda.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Sidebar direita -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    <!-- Por status -->
+    <div class="cs-card">
+      <div class="cs-card-header">
+        <span class="cs-card-title">POR STATUS</span>
+      </div>
+      <div class="cs-card-body">
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          {% for status_k, count, color in status_rows %}
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="text-sm" style="color:rgba(255,255,255,.7);">{{ status_k }}</span>
+            <span class="cs-badge {{ color }}">{{ count }}</span>
+          </div>
+          {% endfor %}
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="text-sm" style="color:rgba(255,255,255,.7);">Abertos</span>
+            <span class="cs-badge b-blue">{{ tickets_by_status.open.count }}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="text-sm" style="color:rgba(255,255,255,.7);">Em Atendimento</span>
+            <span class="cs-badge b-teal">{{ tickets_by_status.in_progress.count }}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="text-sm" style="color:rgba(255,255,255,.7);">Aguardando</span>
+            <span class="cs-badge b-yellow">{{ tickets_by_status.waiting.count }}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="text-sm" style="color:rgba(255,255,255,.7);">Resolvidos</span>
+            <span class="cs-badge b-green">{{ tickets_by_status.resolved.count }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="cs-card">
+      <div class="cs-card-header">
+        <span class="cs-card-title">AÇÕES RÁPIDAS</span>
+      </div>
+      <div class="cs-card-body">
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <a href="{% url 'kanban' %}" class="btn-cs btn-cs-teal w-100" style="justify-content:center;">
+            <i class="fas fa-columns"></i> Ver Kanban
+          </a>
+          <a href="{% url 'ticket_list' %}?priority=urgent" class="btn-cs btn-cs-ghost w-100" style="justify-content:center;">
+            <i class="fas fa-fire"></i> Ver Urgentes
+          </a>
+          <a href="{% url 'knowledge_list' %}" class="btn-cs btn-cs-ghost w-100" style="justify-content:center;">
+            <i class="fas fa-book-open"></i> Base de Conhecimento
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

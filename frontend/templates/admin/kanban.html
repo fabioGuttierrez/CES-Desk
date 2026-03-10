@@ -1,0 +1,141 @@
+{% extends "base/layout.html" %}
+{% load ticket_filters %}
+{% block title %}Kanban — Campos e Souza DP{% endblock %}
+{% block page_title %}KANBAN{% endblock %}
+
+{% block extra_head %}
+<style>
+  main.cs-main { overflow-x: auto; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="kanban-board">
+  {% for status_key, status_label in statuses %}
+  <div class="kanban-col">
+    <div class="kanban-col-header
+      {% if status_key == 'open' %}kh-open
+      {% elif status_key == 'in_progress' %}kh-progress
+      {% elif status_key == 'waiting' %}kh-waiting
+      {% else %}kh-resolved{% endif %}">
+      <span class="kanban-col-title">{{ status_label }}</span>
+      <span class="cs-badge
+        {% if status_key == 'open' %}b-blue
+        {% elif status_key == 'in_progress' %}b-teal
+        {% elif status_key == 'waiting' %}b-yellow
+        {% else %}b-green{% endif %}">
+        {{ columns|dictget:status_key|length }}
+      </span>
+    </div>
+    <div class="kanban-col-body" id="col-{{ status_key }}" data-status="{{ status_key }}">
+      {% for ticket in columns|dictget:status_key %}
+      <div class="kanban-card" draggable="true" data-ticket-id="{{ ticket.pk }}"
+           onclick="if(!this._dragging)location.href='{% url 'ticket_detail' ticket.pk %}'"
+           ondragstart="kanbanDragStart(event)">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span class="ticket-number" style="font-size:12px;">{{ ticket.number }}</span>
+          <span class="cs-badge {% if ticket.priority == 'urgent' %}b-red{% elif ticket.priority == 'high' %}b-orange{% elif ticket.priority == 'medium' %}b-blue{% else %}b-green{% endif %}" style="font-size:9px;">
+            {{ ticket.get_priority_display }}
+          </span>
+        </div>
+        <div style="font-size:13px; font-weight:500; color:rgba(255,255,255,.9); margin-bottom:8px; line-height:1.4;">
+          {{ ticket.subject|truncatechars:65 }}
+        </div>
+        <div style="font-size:11.5px; color:var(--cs-gray); margin-bottom:10px;">
+          <i class="fas fa-building" style="margin-right:4px;"></i>{{ ticket.company.name|truncatechars:25 }}
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          {% if ticket.assigned_to %}
+          <span style="font-size:11px; background:rgba(39,115,100,.15); color:var(--cs-teal-light);
+                       padding:3px 8px; border-radius:12px;">
+            {{ ticket.assigned_to.get_full_name|default:ticket.assigned_to.username|truncatechars:15 }}
+          </span>
+          {% else %}
+          <span style="font-size:11px; color:var(--cs-gray);">Sem responsável</span>
+          {% endif %}
+          <span class="text-xs text-muted">{{ ticket.created_at|date:"d/m" }}</span>
+        </div>
+      </div>
+      {% empty %}
+      <div style="text-align:center; padding:30px 10px; color:var(--cs-gray); font-size:12px; border:1px dashed rgba(255,255,255,.06); border-radius:8px; margin-top:4px;">
+        <i class="fas fa-inbox" style="display:block; margin-bottom:6px; opacity:.3;"></i>
+        Nenhum ticket
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const MOVE_URL = "{% url 'kanban_move' %}";
+const CSRF = "{{ csrf_token }}";
+
+let draggedCard = null;
+
+function kanbanDragStart(e) {
+  draggedCard = e.currentTarget;
+  draggedCard._dragging = true;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', draggedCard.dataset.ticketId);
+  setTimeout(() => draggedCard.style.opacity = '0.4', 0);
+}
+
+document.querySelectorAll('.kanban-col-body').forEach(col => {
+  col.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    col.classList.add('drag-over');
+  });
+
+  col.addEventListener('dragleave', e => {
+    if (!col.contains(e.relatedTarget)) col.classList.remove('drag-over');
+  });
+
+  col.addEventListener('drop', async e => {
+    e.preventDefault();
+    col.classList.remove('drag-over');
+    if (!draggedCard) return;
+
+    const newStatus = col.dataset.status;
+    const ticketId  = draggedCard.dataset.ticketId;
+    const fromCol   = draggedCard.closest('.kanban-col-body');
+    if (fromCol === col) { resetCard(); return; }
+
+    col.insertBefore(draggedCard, col.firstChild);
+    resetCard();
+    updateCount(fromCol);
+    updateCount(col);
+
+    const fd = new FormData();
+    fd.append('ticket_id', ticketId);
+    fd.append('status', newStatus);
+    fd.append('csrfmiddlewaretoken', CSRF);
+
+    const res = await fetch(MOVE_URL, { method: 'POST', body: fd });
+    if (!res.ok) alert('Erro ao mover ticket. Recarregue a página.');
+  });
+});
+
+document.addEventListener('dragend', () => { if (draggedCard) resetCard(); });
+
+function resetCard() {
+  if (!draggedCard) return;
+  draggedCard.style.opacity = '';
+  setTimeout(() => { if (draggedCard) draggedCard._dragging = false; }, 50);
+  draggedCard = null;
+}
+
+function updateCount(colBody) {
+  const badge = colBody.closest('.kanban-col').querySelector('.cs-badge');
+  if (badge) badge.textContent = colBody.querySelectorAll('.kanban-card').length;
+}
+</script>
+<style>
+.kanban-card[draggable="true"] { cursor: grab; }
+.kanban-card[draggable="true"]:active { cursor: grabbing; }
+.kanban-col-body.drag-over { outline: 2px dashed var(--cs-teal-light, #4dd9ac); border-radius: 8px; }
+</style>
+{% endblock %}

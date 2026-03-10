@@ -1,0 +1,98 @@
+{% extends "base/layout.html" %}
+{% block title %}Meu Portal — Campos e Souza DP{% endblock %}
+{% block page_title %}MEU PORTAL{% endblock %}
+
+{% block content %}
+
+<!-- Banner de boas-vindas -->
+<div style="background:linear-gradient(120deg, rgba(39,115,100,.15) 0%, rgba(255,144,0,.06) 100%);
+            border:1px solid rgba(39,115,100,.2); border-radius:14px;
+            padding:24px 28px; margin-bottom:24px;
+            display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+  <div>
+    <h2 style="font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:2px; margin:0; color:#fff;">
+      OLÁ, {{ user.first_name|default:user.username|upper }}
+    </h2>
+    <p style="color:#7A7A7A; font-size:13.5px; margin:4px 0 0;">
+      {{ user.company.name }} &mdash; Você tem
+      <strong style="color:#34B29A;">{{ open_count }}</strong>
+      chamado(s) em aberto.
+    </p>
+  </div>
+  <a href="{% url 'ticket_create' %}" class="btn-cs btn-cs-orange" style="font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:1.5px;">
+    <i class="fas fa-plus"></i> ABRIR CHAMADO
+  </a>
+</div>
+
+<!-- Tickets recentes -->
+<div class="cs-card">
+  <div class="cs-card-header">
+    <span class="cs-card-title">MEUS CHAMADOS</span>
+    <a href="{% url 'ticket_list' %}" class="btn-cs-ghost btn-sm-cs">Ver todos <i class="fas fa-arrow-right"></i></a>
+  </div>
+
+  {% if tickets %}
+  <div class="cs-table-wrap">
+    <table class="cs-table">
+      <thead>
+        <tr>
+          <th style="padding-left:22px;">#</th>
+          <th>Assunto</th>
+          <th>Categoria</th>
+          <th>Prioridade</th>
+          <th>Status</th>
+          <th>Data</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ticket in tickets %}
+        <tr onclick="location.href='{% url 'ticket_detail' ticket.pk %}'">
+          <td style="padding-left:22px;"><span class="ticket-number">{{ ticket.number }}</span></td>
+          <td style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500;">
+            {{ ticket.subject }}
+          </td>
+          <td class="text-sm text-muted">{{ ticket.category.name|default:"—" }}</td>
+          <td>
+            <span class="cs-badge
+              {% if ticket.priority == 'urgent' %}b-red
+              {% elif ticket.priority == 'high' %}b-orange
+              {% elif ticket.priority == 'medium' %}b-blue
+              {% else %}b-green{% endif %}">
+              {{ ticket.get_priority_display }}
+            </span>
+          </td>
+          <td>
+            <span class="cs-badge
+              {% if ticket.status == 'open' %}b-blue
+              {% elif ticket.status == 'in_progress' %}b-teal
+              {% elif ticket.status == 'waiting' %}b-yellow
+              {% elif ticket.status == 'resolved' %}b-green
+              {% else %}b-gray{% endif %}">
+              {{ ticket.get_status_display }}
+            </span>
+          </td>
+          <td class="text-sm text-muted">{{ ticket.created_at|date:"d/m/Y H:i" }}</td>
+          <td>
+            <a href="{% url 'ticket_detail' ticket.pk %}" class="btn-cs-ghost btn-sm-cs"
+               onclick="event.stopPropagation()">
+              <i class="fas fa-eye"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="cs-empty">
+    <i class="fas fa-inbox"></i>
+    <p style="font-size:15px; margin:0 0 16px;">Nenhum chamado ainda.</p>
+    <a href="{% url 'ticket_create' %}" class="btn-cs btn-cs-teal">
+      <i class="fas fa-plus"></i> Abrir primeiro chamado
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

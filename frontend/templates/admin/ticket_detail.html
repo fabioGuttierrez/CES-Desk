@@ -1,0 +1,291 @@
+{% extends "base/layout.html" %}
+{% block title %}#{{ ticket.number }} — DP{% endblock %}
+{% block page_title %}TICKET #{{ ticket.number }}{% endblock %}
+
+{% block content %}
+<div style="display:grid; grid-template-columns:1fr 310px; gap:22px; align-items:start;">
+
+  <!-- Coluna principal -->
+  <div style="display:flex; flex-direction:column; gap:18px;">
+
+    <!-- Header do ticket -->
+    <div class="cs-card">
+      <div class="cs-card-body">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+          <div>
+            <h3 style="font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:1.5px; margin:0 0 10px;">
+              {{ ticket.subject }}
+            </h3>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+              <span class="cs-badge b-gray">{{ ticket.category.name|default:"Sem categoria" }}</span>
+              <span class="cs-badge
+                {% if ticket.priority == 'urgent' %}b-red
+                {% elif ticket.priority == 'high' %}b-orange
+                {% elif ticket.priority == 'medium' %}b-blue
+                {% else %}b-green{% endif %}">
+                {{ ticket.get_priority_display }}
+              </span>
+              <span class="cs-badge
+                {% if ticket.status == 'open' %}b-blue
+                {% elif ticket.status == 'in_progress' %}b-teal
+                {% elif ticket.status == 'waiting' %}b-yellow
+                {% elif ticket.status == 'resolved' %}b-green
+                {% else %}b-gray{% endif %}">
+                {{ ticket.get_status_display }}
+              </span>
+            </div>
+          </div>
+          <span class="text-xs text-muted">{{ ticket.created_at|date:"d/m/Y H:i" }}</span>
+        </div>
+        <div style="background:#181818; border:1px solid rgba(255,255,255,.06); border-radius:8px;
+                    padding:16px; color:rgba(255,255,255,.75); font-size:14px; line-height:1.7;
+                    white-space:pre-wrap;">{{ ticket.description }}</div>
+      </div>
+    </div>
+
+    <!-- Mensagens -->
+    <div class="cs-card">
+      <div class="cs-card-header">
+        <span class="cs-card-title">CONVERSA</span>
+        <span class="cs-badge b-gray">{{ messages.count }} mensagem(ns)</span>
+      </div>
+      <div class="cs-card-body" style="display:flex; flex-direction:column; gap:14px; max-height:500px; overflow-y:auto;">
+        {% for msg in messages %}
+        <div class="msg-wrap {% if msg.author.role != 'client' %}analyst{% else %}client{% endif %}">
+          <div class="msg-bubble {% if msg.author.role != 'client' %}analyst{% else %}client{% endif %} {% if msg.is_internal %}internal{% endif %}">
+            <div class="msg-meta">
+              <span class="msg-author {% if msg.author.role == 'client' %}client-author{% endif %}">
+                {{ msg.author.get_full_name|default:msg.author.username }}
+                {% if msg.author.role == 'client' %}<span class="cs-badge b-gray" style="font-size:9px; margin-left:4px;">Cliente</span>
+                {% else %}<span class="cs-badge b-teal" style="font-size:9px; margin-left:4px;">Analista</span>{% endif %}
+                {% if msg.is_internal %}<span class="cs-badge b-orange" style="font-size:9px; margin-left:4px;"><i class="fas fa-eye-slash"></i> Interna</span>{% endif %}
+              </span>
+              <span class="msg-time">{{ msg.created_at|date:"d/m H:i" }}</span>
+            </div>
+            <div style="white-space:pre-wrap; font-size:14px; line-height:1.65; color:rgba(255,255,255,.85);">{{ msg.message }}</div>
+            {% if msg.attachments.all %}
+            <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,.06);">
+              {% for att in msg.attachments.all %}
+              <a href="{{ att.file_url }}" target="_blank" class="btn-cs-ghost btn-sm-cs" style="margin:2px 4px 2px 0;">
+                <i class="fas fa-paperclip"></i> {{ att.file_name|truncatechars:25 }}
+              </a>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% empty %}
+        <div class="cs-empty" style="padding:30px 0;">
+          <i class="fas fa-comments"></i>
+          <p>Nenhuma mensagem ainda.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Responder -->
+    <div class="cs-card">
+      <div class="cs-card-header">
+        <span class="cs-card-title"><i class="fas fa-reply" style="color:var(--cs-teal); margin-right:8px;"></i>RESPONDER</span>
+      </div>
+      <div class="cs-card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="reply"/>
+          <textarea name="message" class="cs-textarea" rows="5"
+            placeholder="Escreva sua resposta ao cliente..." style="margin-bottom:14px;"></textarea>
+          <div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:rgba(255,255,255,.6); font-size:13px;">
+              <input type="checkbox" name="is_internal" style="accent-color:var(--cs-orange); width:15px; height:15px;"/>
+              <span style="color:var(--cs-orange); font-weight:600;">
+                <i class="fas fa-eye-slash"></i> Nota Interna
+              </span>
+            </label>
+            <label class="btn-cs-ghost btn-sm-cs position-relative" style="cursor:pointer; overflow:hidden;">
+              <i class="fas fa-paperclip"></i> Anexar
+              <input type="file" name="attachments" multiple
+                     style="position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%;"/>
+            </label>
+            <button type="submit" class="btn-cs btn-cs-teal" style="margin-left:auto;">
+              <i class="fas fa-paper-plane"></i> Enviar Resposta
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Coluna lateral de gestão -->
+  <div style="display:flex; flex-direction:column; gap:16px; position:sticky; top:80px;">
+
+    <!-- Atribuição -->
+    <div class="cs-card">
+      <div class="cs-card-header">
+        <span class="cs-card-title">ATRIBUIÇÃO</span>
+      </div>
+      <div class="cs-card-body">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="assign"/>
+          <label class="cs-label">Responsável</label>
+          <select name="analyst_id" class="cs-select" style="margin-bottom:10px;">
+            <option value="">— Sem responsável —</option>
+            {% for analyst in analysts %}
+            <option value="{{ analyst.pk }}" {% if ticket.assigned_to == analyst %}selected{% endif %}>
+              {{ analyst.get_full_name|default:analyst.username }}
+            </option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn-cs btn-cs-teal w-100" style="justify-content:center;">
+            <i class="fas fa-user-check"></i> Atribuir
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="cs-card">
+      <div class="cs-card-header">
+        <span class="cs-card-title">STATUS</span>
+      </div>
+      <div class="cs-card-body">
+        <form method="post" style="display:flex; flex-direction:column; gap:7px;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="change_status"/>
+          {% for val, label in status_choices %}
+          <button type="submit" name="status" value="{{ val }}"
+            style="width:100%; padding:9px 14px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:500;
+                   text-align:left; transition:all .18s;
+                   {% if ticket.status == val %}
+                     background:rgba(39,115,100,.2); border:1px solid rgba(52,178,154,.35); color:#fff;
+                   {% else %}
+                     background:#181818; border:1px solid rgba(255,255,255,.07); color:rgba(255,255,255,.55);
+                   {% endif %}">
+            {% if val == 'open' %}<i class="fas fa-circle" style="color:#60a5fa; margin-right:6px; font-size:10px;"></i>
+            {% elif val == 'in_progress' %}<i class="fas fa-circle" style="color:#34B29A; margin-right:6px; font-size:10px;"></i>
+            {% elif val == 'waiting' %}<i class="fas fa-circle" style="color:#FF9000; margin-right:6px; font-size:10px;"></i>
+            {% elif val == 'resolved' %}<i class="fas fa-circle" style="color:#4ade80; margin-right:6px; font-size:10px;"></i>
+            {% else %}<i class="fas fa-circle" style="color:#7A7A7A; margin-right:6px; font-size:10px;"></i>{% endif %}
+            {{ label }}
+          </button>
+          {% endfor %}
+        </form>
+      </div>
+    </div>
+
+    <!-- Prioridade -->
+    <div class="cs-card">
+      <div class="cs-card-header">
+        <span class="cs-card-title">PRIORIDADE</span>
+      </div>
+      <div class="cs-card-body">
+        <form method="post" style="display:grid; grid-template-columns:1fr 1fr; gap:7px;">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="change_priority"/>
+          {% for val, label in priority_choices %}
+          <button type="submit" name="priority" value="{{ val }}"
+            style="padding:8px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600;
+                   transition:all .18s;
+                   {% if ticket.priority == val %}
+                     {% if val == 'urgent' %}background:rgba(220,38,38,.2); border:1px solid rgba(239,68,68,.3); color:#ef4444;
+                     {% elif val == 'high' %}background:rgba(255,144,0,.15); border:1px solid rgba(255,144,0,.3); color:#FF9000;
+                     {% elif val == 'medium' %}background:rgba(59,130,246,.15); border:1px solid rgba(96,165,250,.3); color:#60a5fa;
+                     {% else %}background:rgba(34,197,94,.12); border:1px solid rgba(74,222,128,.25); color:#4ade80;{% endif %}
+                   {% else %}
+                     background:#181818; border:1px solid rgba(255,255,255,.07); color:rgba(255,255,255,.5);
+                   {% endif %}">
+            {{ label }}
+          </button>
+          {% endfor %}
+        </form>
+      </div>
+    </div>
+
+    <!-- SLA -->
+    {% if ticket.sla %}
+    <div class="cs-card" style="{% if ticket.sla.resolution_breached %}border-color:rgba(220,38,38,.3);{% endif %}">
+      <div class="cs-card-header">
+        <span class="cs-card-title">
+          <i class="fas fa-clock" style="color:{% if ticket.sla.resolution_breached %}#ef4444{% else %}#34B29A{% endif %}; margin-right:6px;"></i>SLA
+        </span>
+        {% if ticket.sla.resolution_breached %}
+        <span class="cs-badge b-red">Estourado</span>
+        {% endif %}
+      </div>
+      <div class="cs-card-body">
+        <div class="detail-section">
+          <div class="detail-label">Prazo de Resposta</div>
+          <div class="detail-value">{{ ticket.sla.response_deadline|date:"d/m/Y H:i" }}
+            {% if ticket.sla.responded_at %}<i class="fas fa-check" style="color:#4ade80; margin-left:4px;"></i>{% endif %}
+          </div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label">Prazo de Resolução</div>
+          <div class="detail-value">{{ ticket.sla.resolution_deadline|date:"d/m/Y H:i" }}</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Informações -->
+    <div class="cs-card">
+      <div class="cs-card-header">
+        <span class="cs-card-title">DETALHES</span>
+      </div>
+      <div class="cs-card-body">
+        <div class="detail-section">
+          <div class="detail-label">Empresa</div>
+          <div class="detail-value">{{ ticket.company.name }}</div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label">Aberto por</div>
+          <div class="detail-value">{{ ticket.created_by.get_full_name|default:ticket.created_by.username }}</div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label">Abertura</div>
+          <div class="detail-value text-sm">{{ ticket.created_at|date:"d/m/Y H:i" }}</div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label">Última atualização</div>
+          <div class="detail-value text-sm">{{ ticket.updated_at|date:"d/m/Y H:i" }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Documentos -->
+    {% if attachments %}
+    <div class="cs-card">
+      <div class="cs-card-header">
+        <span class="cs-card-title"><i class="fas fa-paperclip" style="margin-right:6px;"></i>DOCUMENTOS</span>
+        <span class="cs-badge b-gray">{{ attachments.count }}</span>
+      </div>
+      <div class="cs-card-body" style="display:flex; flex-direction:column; gap:8px;">
+        {% for att in attachments %}
+        <a href="{{ att.file_url }}" target="_blank"
+           style="display:flex; align-items:center; gap:10px; padding:8px 10px;
+                  border:1px solid rgba(255,255,255,.06); border-radius:8px;
+                  text-decoration:none; color:rgba(255,255,255,.8); transition:all .15s;">
+          <i class="fas fa-file" style="color:var(--cs-teal); flex-shrink:0;"></i>
+          <div style="overflow:hidden;">
+            <div style="font-size:12.5px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ att.file_name }}</div>
+            <div style="font-size:11px; color:var(--cs-gray);">{{ att.file_size_display }}</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  const container = document.querySelector('.cs-card-body[style*="overflow-y:auto"]');
+  if (container) container.scrollTop = container.scrollHeight;
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "base/layout.html" %}
+{% block title %}Tickets — Campos e Souza DP{% endblock %}
+{% block page_title %}GERENCIAR TICKETS{% endblock %}
+
+{% block content %}
+<!-- Filtros -->
+<div class="cs-card" style="margin-bottom:20px;">
+  <div class="cs-card-body">
+    <form method="get" style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;">
+      <div style="flex:1; min-width:180px;">
+        <label class="cs-label">Buscar</label>
+        <input type="text" name="q" value="{{ request.GET.q }}" class="cs-input"
+               placeholder="Número, assunto..."/>
+      </div>
+      <div style="min-width:140px;">
+        <label class="cs-label">Status</label>
+        <select name="status" class="cs-select">
+          <option value="">Todos</option>
+          <option value="open" {% if current_status == 'open' %}selected{% endif %}>Aberto</option>
+          <option value="in_progress" {% if current_status == 'in_progress' %}selected{% endif %}>Em Atendimento</option>
+          <option value="waiting" {% if current_status == 'waiting' %}selected{% endif %}>Aguardando Cliente</option>
+          <option value="resolved" {% if current_status == 'resolved' %}selected{% endif %}>Resolvido</option>
+          <option value="closed" {% if current_status == 'closed' %}selected{% endif %}>Fechado</option>
+        </select>
+      </div>
+      <div style="min-width:130px;">
+        <label class="cs-label">Prioridade</label>
+        <select name="priority" class="cs-select">
+          <option value="">Todas</option>
+          <option value="urgent">Urgente</option>
+          <option value="high">Alta</option>
+          <option value="medium">Média</option>
+          <option value="low">Baixa</option>
+        </select>
+      </div>
+      <div style="min-width:150px;">
+        <label class="cs-label">Categoria</label>
+        <select name="category" class="cs-select">
+          <option value="">Todas</option>
+          {% for cat in categories %}
+          <option value="{{ cat.pk }}">{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="display:flex; gap:8px; align-self:flex-end;">
+        <button type="submit" class="btn-cs btn-cs-teal">
+          <i class="fas fa-filter"></i> Filtrar
+        </button>
+        <a href="{% url 'ticket_list' %}" class="btn-cs-ghost">
+          <i class="fas fa-times"></i>
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="cs-card">
+  {% if tickets %}
+  <div class="cs-table-wrap">
+    <table class="cs-table">
+      <thead>
+        <tr>
+          <th style="padding-left:22px;">#</th>
+          <th>Assunto</th>
+          <th>Empresa</th>
+          <th>Categoria</th>
+          <th>Responsável</th>
+          <th>Prioridade</th>
+          <th>Status</th>
+          <th>Data</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ticket in tickets %}
+        <tr onclick="location.href='{% url 'ticket_detail' ticket.pk %}'">
+          <td style="padding-left:22px;"><span class="ticket-number">{{ ticket.number }}</span></td>
+          <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500;">{{ ticket.subject }}</td>
+          <td class="text-sm text-muted">{{ ticket.company.name|truncatechars:20 }}</td>
+          <td class="text-sm text-muted">{{ ticket.category.name|default:"—" }}</td>
+          <td class="text-sm text-muted">{{ ticket.assigned_to.get_full_name|default:"—" }}</td>
+          <td>
+            <span class="cs-badge {% if ticket.priority == 'urgent' %}b-red{% elif ticket.priority == 'high' %}b-orange{% elif ticket.priority == 'medium' %}b-blue{% else %}b-green{% endif %}">
+              {{ ticket.get_priority_display }}
+            </span>
+          </td>
+          <td>
+            <span class="cs-badge {% if ticket.status == 'open' %}b-blue{% elif ticket.status == 'in_progress' %}b-teal{% elif ticket.status == 'waiting' %}b-yellow{% elif ticket.status == 'resolved' %}b-green{% else %}b-gray{% endif %}">
+              {{ ticket.get_status_display }}
+            </span>
+          </td>
+          <td class="text-sm text-muted" style="white-space:nowrap;">{{ ticket.created_at|date:"d/m H:i" }}</td>
+          <td>
+            <a href="{% url 'ticket_detail' ticket.pk %}" class="btn-cs-ghost btn-sm-cs" onclick="event.stopPropagation()">
+              <i class="fas fa-eye"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="cs-empty">
+    <i class="fas fa-search"></i>
+    <p>Nenhum ticket encontrado para os filtros aplicados.</p>
+    <a href="{% url 'ticket_list' %}" class="btn-cs-ghost">Limpar filtros</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

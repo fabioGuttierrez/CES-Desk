@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Service Desk DP — Campos e Souza{% endblock %}</title>
+  <link rel="icon" type="image/png" href="https://camposesouzaconsultoria.com.br/blog/wp-content/uploads/2024/03/cropped-cropped-campos-e-souza-logo-mini.png"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="/static/css/main.css"/>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<div id="wrapper">
+
+  <!-- ── Sidebar ───────────────────────────────────────────────── -->
+  <aside id="sidebar">
+
+    <!-- Logo -->
+    <div class="sidebar-logo-wrap">
+      <img
+        src="https://camposesouzaconsultoria.com.br/blog/wp-content/uploads/2024/03/campos-e-souza-logo-padrao-pn4229bz60hkzm4pdkfjkrf8uiuhtswa6rrejbp3lg.png"
+        alt="Campos e Souza Consultoria"
+        class="sidebar-logo-img"
+        onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';"
+      />
+      <div id="logo-fallback" style="display:none; font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; color:#34B29A;">
+        CAMPOS E SOUZA
+      </div>
+      <span class="sidebar-subtitle">Service Desk &middot; DP</span>
+    </div>
+
+    <!-- Nav -->
+    <nav class="sidebar-nav">
+      {% if user.role == 'client' %}
+        <span class="sidebar-section-label">Portal do Cliente</span>
+        <a href="{% url 'client_dashboard' %}"
+           class="cs-nav-link {% if request.resolver_match.url_name == 'client_dashboard' %}active{% endif %}">
+          <i class="fas fa-home"></i> Início
+        </a>
+        <a href="{% url 'ticket_list' %}"
+           class="cs-nav-link {% if request.resolver_match.url_name == 'ticket_list' %}active{% endif %}">
+          <i class="fas fa-ticket-simple"></i> Meus Chamados
+        </a>
+        <a href="{% url 'ticket_create' %}"
+           class="cs-nav-link {% if request.resolver_match.url_name == 'ticket_create' %}active{% endif %}">
+          <i class="fas fa-plus-circle"></i> Abrir Chamado
+        </a>
+        <a href="{% url 'knowledge_list' %}"
+           class="cs-nav-link {% if 'knowledge' in request.resolver_match.url_name %}active{% endif %}">
+          <i class="fas fa-book-open"></i> Base de Conhecimento
+        </a>
+
+      {% else %}
+        <span class="sidebar-section-label">Painel DP</span>
+        <a href="{% url 'dashboard' %}"
+           class="cs-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+          <i class="fas fa-chart-pie"></i> Dashboard
+        </a>
+        <a href="{% url 'ticket_list' %}"
+           class="cs-nav-link {% if request.resolver_match.url_name == 'ticket_list' %}active{% endif %}">
+          <i class="fas fa-ticket-simple"></i> Tickets
+        </a>
+        <a href="{% url 'kanban' %}"
+           class="cs-nav-link {% if request.resolver_match.url_name == 'kanban' %}active{% endif %}">
+          <i class="fas fa-columns"></i> Kanban
+        </a>
+
+        <span class="sidebar-section-label">Conteúdo</span>
+        <a href="{% url 'knowledge_list' %}"
+           class="cs-nav-link {% if 'knowledge' in request.resolver_match.url_name %}active{% endif %}">
+          <i class="fas fa-book-open"></i> Base de Conhecimento
+        </a>
+
+        {% if user.role == 'admin' %}
+        <span class="sidebar-section-label">Sistema</span>
+        <a href="{% url 'holiday_list' %}"
+           class="cs-nav-link {% if request.resolver_match.url_name == 'holiday_list' %}active{% endif %}">
+          <i class="fas fa-calendar-days"></i> Feriados / SLA
+        </a>
+        <a href="/django-admin/" class="cs-nav-link" target="_blank">
+          <i class="fas fa-cog"></i> Administração
+        </a>
+        <a href="/api/" class="cs-nav-link" target="_blank">
+          <i class="fas fa-code"></i> API
+        </a>
+        {% endif %}
+      {% endif %}
+    </nav>
+
+    <!-- Footer -->
+    <div class="sidebar-footer">
+      <div class="d-flex align-center gap-2 mb-3">
+        <div class="sidebar-avatar">
+          {{ user.first_name|first|upper|default:user.username|first|upper }}
+        </div>
+        <div style="overflow:hidden;">
+          <span class="sidebar-user-name">{{ user.get_full_name|default:user.username }}</span>
+          <span class="sidebar-user-role">{{ user.get_role_display }}</span>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{% url 'profile' %}" class="btn-cs-ghost btn-sm-cs" style="flex:1; justify-content:center;">
+          <i class="fas fa-user"></i> Perfil
+        </a>
+        <a href="{% url 'logout' %}" class="btn-cs-danger btn-sm-cs">
+          <i class="fas fa-sign-out-alt"></i>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Page Content ───────────────────────────────────────────── -->
+  <div id="page-content">
+
+    <!-- Gradient accent -->
+    <div class="cs-glow-bar"></div>
+
+    <!-- Topbar -->
+    <div id="topbar">
+      <button class="topbar-btn" id="sidebarToggle" title="Menu">
+        <i class="fas fa-bars"></i>
+      </button>
+
+      <span class="topbar-title">{% block page_title %}{% endblock %}</span>
+
+      <!-- Notifications -->
+      <div style="position:relative;">
+        <button class="topbar-btn" id="notifBtn" title="Notificações">
+          <i class="fas fa-bell"></i>
+          {% if unread_notifications_count %}
+          <span class="notif-count" id="notif-badge">{{ unread_notifications_count }}</span>
+          {% endif %}
+        </button>
+
+        <!-- Notification dropdown -->
+        <div id="notifDropdown" style="display:none; position:absolute; right:0; top:calc(100% + 10px);
+             width:320px; background:#111; border:1px solid rgba(255,255,255,.08);
+             border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.7); z-index:200; overflow:hidden;">
+          <div style="padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.08);
+                      display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-family:'Bebas Neue',sans-serif; letter-spacing:1.5px; font-size:15px;">NOTIFICAÇÕES</span>
+            <a href="{% url 'notifications_mark_read' %}" id="mark-all-read"
+               style="font-size:11px; color:var(--cs-teal-light); text-decoration:none;">Marcar lidas</a>
+          </div>
+          {% for notif in notifications %}
+          <div style="padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.05);
+                      {% if not notif.read %}background:rgba(39,115,100,.06);{% endif %}
+                      cursor:default;">
+            <div style="font-size:12.5px; font-weight:600; color:#fff; margin-bottom:3px;">{{ notif.title }}</div>
+            <div class="text-sm text-muted">{{ notif.created_at|timesince }} atrás</div>
+          </div>
+          {% empty %}
+          <div style="padding:28px; text-align:center; color:var(--cs-gray); font-size:13px;">
+            <i class="fas fa-bell-slash" style="display:block; font-size:1.5rem; margin-bottom:8px; opacity:.3;"></i>
+            Sem novas notificações
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Profile quick -->
+      <a href="{% url 'profile' %}" class="btn-cs-ghost btn-sm-cs" style="font-size:12px;">
+        <i class="fas fa-user"></i>
+        {{ user.first_name|default:user.username }}
+      </a>
+    </div>
+
+    <!-- Flash messages -->
+    {% if messages %}
+    <div style="padding:12px 28px 0;">
+      {% for message in messages %}
+      <div style="display:flex; align-items:center; gap:10px; padding:12px 16px; border-radius:8px; margin-bottom:8px;
+                  {% if 'error' in message.tags %}
+                    background:rgba(220,38,38,.1); border:1px solid rgba(220,38,38,.25); color:#ef4444;
+                  {% elif 'success' in message.tags %}
+                    background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.2); color:#4ade80;
+                  {% else %}
+                    background:rgba(39,115,100,.1); border:1px solid rgba(39,115,100,.2); color:var(--cs-teal-light);
+                  {% endif %}
+                  font-size:13.5px;">
+        <i class="fas {% if 'error' in message.tags %}fa-exclamation-circle{% elif 'success' in message.tags %}fa-check-circle{% else %}fa-info-circle{% endif %}"></i>
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main -->
+    <main class="cs-main fade-in">
+      {% block content %}{% endblock %}
+    </main>
+  </div><!-- /page-content -->
+</div><!-- /wrapper -->
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script src="/static/js/main.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

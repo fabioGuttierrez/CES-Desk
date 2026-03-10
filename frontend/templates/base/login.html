@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Entrar — Campos e Souza Service Desk</title>
+  <link rel="icon" type="image/png" href="https://camposesouzaconsultoria.com.br/blog/wp-content/uploads/2024/03/cropped-cropped-campos-e-souza-logo-mini.png"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="/static/css/main.css"/>
+  <style>
+    body {
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Gradient orbs de fundo */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -30%;
+      left: -20%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(39,115,100,.25) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -20%;
+      right: -15%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(255,144,0,.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .login-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: #0d0d0d;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,.7);
+    }
+
+    .login-top-bar {
+      height: 4px;
+      background: linear-gradient(90deg, #277364, #34B29A, #FF9000);
+    }
+
+    .login-body {
+      padding: 40px 40px 36px;
+    }
+
+    .login-logo {
+      margin-bottom: 28px;
+      text-align: center;
+    }
+
+    .login-logo img {
+      height: 44px;
+      width: auto;
+      object-fit: contain;
+      filter: brightness(1.1);
+    }
+
+    .login-logo-fallback {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      letter-spacing: 3px;
+      color: #34B29A;
+    }
+
+    .login-badge {
+      display: inline-block;
+      background: rgba(39,115,100,.15);
+      border: 1px solid rgba(52,178,154,.2);
+      color: #34B29A;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-top: 10px;
+    }
+
+    .login-h {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px;
+      letter-spacing: 2px;
+      color: #fff;
+      margin: 0 0 4px;
+    }
+
+    .login-sub {
+      font-size: 13px;
+      color: #7A7A7A;
+      margin: 0 0 28px;
+    }
+
+    .field { margin-bottom: 18px; }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      background: #181818;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color .18s, box-shadow .18s;
+    }
+
+    .input-group:focus-within {
+      border-color: #277364;
+      box-shadow: 0 0 0 3px rgba(39,115,100,.2);
+    }
+
+    .input-icon {
+      padding: 0 14px;
+      color: #277364;
+      font-size: 14px;
+    }
+
+    .input-group input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 14px;
+      padding: 12px 14px 12px 0;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .input-group input::placeholder { color: #555; }
+
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      background: #277364;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all .2s;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-login:hover {
+      background: #34B29A;
+      box-shadow: 0 6px 30px rgba(39,115,100,.4);
+      transform: translateY(-1px);
+    }
+
+    .login-footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 12px;
+      color: #555;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,.05);
+    }
+
+    .login-footer a {
+      color: #34B29A;
+      text-decoration: none;
+    }
+
+    .login-footer a:hover { color: #FF9000; }
+
+    .error-box {
+      background: rgba(220,38,38,.1);
+      border: 1px solid rgba(220,38,38,.25);
+      color: #ef4444;
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 13px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-container fade-in">
+  <div class="login-card">
+    <div class="login-top-bar"></div>
+    <div class="login-body">
+
+      <!-- Logo -->
+      <div class="login-logo">
+        <img
+          src="https://camposesouzaconsultoria.com.br/blog/wp-content/uploads/2024/03/campos-e-souza-logo-padrao-pn4229bz60hkzm4pdkfjkrf8uiuhtswa6rrejbp3lg.png"
+          alt="Campos e Souza Consultoria"
+          onerror="this.style.display='none'; document.getElementById('lf').style.display='block';"
+        />
+        <div id="lf" style="display:none;" class="login-logo-fallback">CAMPOS E SOUZA</div>
+        <span class="login-badge">Service Desk &middot; Departamento Pessoal</span>
+      </div>
+
+      <h2 class="login-h">BEM-VINDO</h2>
+      <p class="login-sub">Acesse o portal de atendimento do DP</p>
+
+      {% if form.errors %}
+      <div class="error-box">
+        <i class="fas fa-exclamation-circle"></i>
+        Usuário ou senha inválidos. Tente novamente.
+      </div>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}"/>
+
+        <div class="field">
+          <label class="cs-label">Usuário</label>
+          <div class="input-group">
+            <span class="input-icon"><i class="fas fa-user"></i></span>
+            <input type="text" name="username" placeholder="seu.usuario" required autofocus autocomplete="username"/>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="cs-label">Senha</label>
+          <div class="input-group">
+            <span class="input-icon"><i class="fas fa-lock"></i></span>
+            <input type="password" name="password" placeholder="••••••••" required autocomplete="current-password"/>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login">
+          <i class="fas fa-arrow-right-to-bracket"></i>
+          ENTRAR
+        </button>
+      </form>
+
+      <div class="login-footer">
+        <a href="{% url 'knowledge_list' %}">
+          <i class="fas fa-book-open"></i> Base de Conhecimento
+        </a>
+        &nbsp;&middot;&nbsp;
+        <a href="https://camposesouzaconsultoria.com.br/" target="_blank">
+          camposesouzaconsultoria.com.br
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/main.js"></script>
+</body>
+</html>

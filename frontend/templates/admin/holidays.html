@@ -1,0 +1,86 @@
+{% extends "base/layout.html" %}
+{% block title %}Calendário de Feriados{% endblock %}
+{% block page_title %}FERIADOS{% endblock %}
+
+{% block content %}
+<div style="max-width:680px; margin:0 auto;">
+
+  <!-- Formulário de adição -->
+  <div class="cs-card" style="margin-bottom:24px;">
+    <div class="cs-card-header">
+      <span><i class="fas fa-plus-circle" style="margin-right:8px;"></i>Adicionar Feriado</span>
+    </div>
+    <div class="cs-card-body">
+      <form method="post" action="{% url 'holiday_create' %}" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+        {% csrf_token %}
+        <div style="flex:0 0 160px;">
+          <label style="font-size:11px; color:var(--cs-gray); display:block; margin-bottom:4px;">Data</label>
+          <input type="date" name="date" required
+                 style="width:100%; background:var(--cs-surface); border:1px solid rgba(255,255,255,.1);
+                        color:#fff; border-radius:8px; padding:8px 12px; font-size:13px;">
+        </div>
+        <div style="flex:1; min-width:180px;">
+          <label style="font-size:11px; color:var(--cs-gray); display:block; margin-bottom:4px;">Descrição</label>
+          <input type="text" name="name" required placeholder="Ex.: Tiradentes"
+                 style="width:100%; background:var(--cs-surface); border:1px solid rgba(255,255,255,.1);
+                        color:#fff; border-radius:8px; padding:8px 12px; font-size:13px;">
+        </div>
+        <button type="submit" class="btn-cs-primary btn-sm-cs">
+          <i class="fas fa-plus"></i> Adicionar
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Lista de feriados -->
+  <div class="cs-card">
+    <div class="cs-card-header">
+      <span><i class="fas fa-calendar-days" style="margin-right:8px;"></i>Feriados Cadastrados</span>
+      <span class="cs-badge b-blue">{{ holidays|length }}</span>
+    </div>
+    <div class="cs-card-body" style="padding:0;">
+      {% if holidays %}
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,.08);">
+            <th style="padding:10px 20px; text-align:left; font-size:11px; color:var(--cs-gray); font-weight:500;">Data</th>
+            <th style="padding:10px 20px; text-align:left; font-size:11px; color:var(--cs-gray); font-weight:500;">Dia da Semana</th>
+            <th style="padding:10px 20px; text-align:left; font-size:11px; color:var(--cs-gray); font-weight:500;">Descrição</th>
+            <th style="padding:10px 20px; text-align:right; font-size:11px; color:var(--cs-gray); font-weight:500;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for h in holidays %}
+          <tr style="border-bottom:1px solid rgba(255,255,255,.04);">
+            <td style="padding:12px 20px; font-size:13px;">{{ h.date|date:"d/m/Y" }}</td>
+            <td style="padding:12px 20px; font-size:13px; color:var(--cs-gray);">{{ h.date|date:"l" }}</td>
+            <td style="padding:12px 20px; font-size:13px;">{{ h.name }}</td>
+            <td style="padding:12px 20px; text-align:right;">
+              <form method="post" action="{% url 'holiday_delete' h.pk %}" style="display:inline;"
+                    onsubmit="return confirm('Remover {{ h.name }}?')">
+                {% csrf_token %}
+                <button type="submit" class="btn-cs-danger btn-sm-cs" style="padding:4px 10px; font-size:11px;">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div style="text-align:center; padding:40px; color:var(--cs-gray); font-size:13px;">
+        <i class="fas fa-calendar-xmark" style="display:block; font-size:2rem; margin-bottom:10px; opacity:.3;"></i>
+        Nenhum feriado cadastrado.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <p style="font-size:11px; color:var(--cs-gray); margin-top:16px; text-align:center;">
+    <i class="fas fa-circle-info" style="margin-right:4px;"></i>
+    Feriados cadastrados aqui suspendem o cômputo do SLA (sábados e domingos já são ignorados automaticamente).
+  </p>
+
+</div>
+{% endblock %}

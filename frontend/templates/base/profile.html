@@ -1,0 +1,62 @@
+{% extends "base/layout.html" %}
+{% block title %}Meu Perfil — Campos e Souza DP{% endblock %}
+{% block page_title %}MEU PERFIL{% endblock %}
+
+{% block content %}
+<div style="max-width:600px; margin:0 auto;">
+  <div class="cs-card">
+    <div class="cs-card-header">
+      <span class="cs-card-title">EDITAR PERFIL</span>
+    </div>
+    <div class="cs-card-body">
+
+      <!-- Avatar -->
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:28px; padding-bottom:20px; border-bottom:1px solid var(--cs-border);">
+        <div style="width:56px; height:56px; border-radius:50%; background:var(--cs-teal);
+                    display:flex; align-items:center; justify-content:center;
+                    font-family:'Bebas Neue',sans-serif; font-size:22px; color:#fff;">
+          {{ user.first_name|first|upper|default:user.username|first|upper }}
+        </div>
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:1px; color:#fff;">
+            {{ user.get_full_name|default:user.username }}
+          </div>
+          <div style="font-size:11px; color:var(--cs-teal-light); text-transform:uppercase; letter-spacing:1.5px; margin-top:2px;">
+            {{ user.get_role_display }}
+            {% if user.company %} &middot; {{ user.company.name }}{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+          <div>
+            <label class="cs-label">Nome</label>
+            <input type="text" name="first_name" class="cs-input" value="{{ user.first_name }}"/>
+          </div>
+          <div>
+            <label class="cs-label">Sobrenome</label>
+            <input type="text" name="last_name" class="cs-input" value="{{ user.last_name }}"/>
+          </div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <label class="cs-label">E-mail</label>
+          <input type="email" class="cs-input" value="{{ user.email }}" disabled
+                 style="opacity:.5; cursor:not-allowed;"/>
+        </div>
+        <div style="margin-bottom:24px;">
+          <label class="cs-label">Telefone</label>
+          <input type="text" name="phone" class="cs-input" value="{{ user.phone }}"
+                 placeholder="(00) 00000-0000"/>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button type="submit" class="btn-cs btn-cs-teal">
+            <i class="fas fa-save"></i> Salvar Alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
