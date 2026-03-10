@@ -195,7 +195,7 @@ CHANNEL_LAYERS = {
 
 # Login
 LOGIN_URL = '/auth/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
+LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/auth/login/'
 
 # SLA defaults (horas)
