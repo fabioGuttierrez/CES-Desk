@@ -107,9 +107,12 @@
         <a href="{% url 'profile' %}" class="btn-cs-ghost btn-sm-cs" style="flex:1; justify-content:center;">
           <i class="fas fa-user"></i> Perfil
         </a>
-        <a href="{% url 'logout' %}" class="btn-cs-danger btn-sm-cs">
-          <i class="fas fa-sign-out-alt"></i>
-        </a>
+        <form method="post" action="{% url 'logout' %}" style="margin:0;">
+          {% csrf_token %}
+          <button type="submit" class="btn-cs-danger btn-sm-cs">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </form>
       </div>
     </div>
   </aside>
